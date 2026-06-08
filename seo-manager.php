@@ -141,7 +141,7 @@
             background-color: var(--danger);
             color: white;
         }
-        
+
         .btn-danger:hover {
             background-color: #dc2626;
         }
@@ -366,7 +366,7 @@
         }
         .gsc-val { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
         .gsc-label { font-size: 0.8rem; color: var(--text-light); }
-        
+
         .chart-container {
             position: relative;
             height: 300px;
@@ -462,7 +462,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="grid">
                 <div class="card" style="grid-column: span 1;">
                     <h3>Воронка времени (Распределение)</h3>
@@ -548,11 +548,11 @@
             <div class="header">
                 <h1>Google Search Console</h1>
             </div>
-            
+
             <div class="card" id="gsc-setup-card">
                 <h3>Настройка подключения</h3>
                 <p style="color: var(--text-light); margin-bottom: 15px;">
-                    Для работы требуется Client ID из Google Cloud Console. 
+                    Для работы требуется Client ID из Google Cloud Console.
                     Убедитесь, что в настройках OAuth добавлен адрес этого сайта (<span id="current-url" style="font-family: monospace; background: #eee; padding: 2px 5px; border-radius: 4px;"></span>) в разделы <b>Authorized JavaScript origins</b> и <b>Authorized redirect URIs</b>.
                 </p>
                 <div class="form-group">
@@ -797,9 +797,28 @@
         window.onload = function() {
             loadDataFromDB(); // Загрузка из БД вместо LocalStorage
             renderKnowledgeBase();
-            
+
             document.getElementById('current-url').innerText = window.location.href.split('#')[0];
         };
+
+        // Переключение вкладок
+        function showSection(sectionId) {
+            // Скрываем все секции
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            // Убираем активный класс со всех кнопок
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Показываем нужную секцию
+            document.getElementById(sectionId).classList.add('active');
+            // Добавляем активный класс соответствующей кнопке
+            const activeBtn = document.querySelector(`.nav-btn[onclick="showSection('${sectionId}')"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
 
         // --- CORE FUNCTIONS (DB VERSION) ---
 
@@ -814,7 +833,7 @@
                 if(data.success) {
                     db.projects = data.projects;
                     db.tasks = data.tasks;
-                    
+
                     // Восстанавливаем настройки
                     if(data.settings.user_xp) db.xp = parseInt(data.settings.user_xp);
                     if(data.settings.gsc_client_id) db.gsc.clientId = data.settings.gsc_client_id;
@@ -974,10 +993,10 @@
                 document.getElementById('task-project').value = task.project_id; // Изменено имя поля
                 document.getElementById('task-category').value = task.category;
                 document.getElementById('task-time').value = task.time_spent; // Изменено имя поля
-                
-                // Чекбокс статуса нужно обрабатывать отдельно, если бы он был в модалке, 
+
+                // Чекбокс статуса нужно обрабатывать отдельно, если бы он был в модалке,
                 // но у нас статус меняется сразу в таблице.
-                
+
                 document.getElementById('taskModalTitle').innerText = "Редактировать задачу";
             } else {
                 document.getElementById('task-id').value = '';
@@ -997,7 +1016,7 @@
             formData.append('category', document.getElementById('task-category').value);
             formData.append('time', document.getElementById('task-time').value);
             // При создании через модалку задача всегда новая (не выполнена)
-            formData.append('done', 0); 
+            formData.append('done', 0);
 
             fetch('api.php', { method: 'POST', body: formData })
             .then(r => r.json())
@@ -1012,7 +1031,7 @@
         function toggleTask(id) {
             const task = db.tasks.find(t => t.id == id);
             const newStatus = task.is_done == 1 ? 0 : 1;
-            
+
             const formData = new FormData();
             formData.append('action', 'toggle_task');
             formData.append('id', id);
@@ -1046,7 +1065,7 @@
 
             db.tasks.forEach(t => {
                 if (filterProj !== 'all' && t.project_id != filterProj) return;
-                
+
                 // Логика фильтра по статусу
                 const isDone = t.is_done == 1;
                 if (filterStatus !== 'all') {
@@ -1089,11 +1108,11 @@
         function startFocusMode(taskId) {
             const task = db.tasks.find(t => t.id == taskId);
             if(!task) return;
-            
+
             currentFocusTaskId = taskId;
             document.getElementById('focus-task-name').innerText = task.description;
             document.getElementById('focus-overlay').style.display = 'flex';
-            
+
             focusTimeLeft = 25 * 60;
             isFocusRunning = false;
             updateFocusDisplay();
@@ -1115,7 +1134,7 @@
                 btn.innerText = "Пауза";
                 btn.classList.remove('btn-primary');
                 btn.classList.add('btn-danger');
-                
+
                 focusTimerInterval = setInterval(() => {
                     if(focusTimeLeft > 0) {
                         focusTimeLeft--;
@@ -1137,7 +1156,7 @@
                                 formData.append('category', task.category);
                                 formData.append('time', newTime);
                                 formData.append('done', task.is_done);
-                                
+
                                 fetch('api.php', { method: 'POST', body: formData })
                                 .then(() => loadDataFromDB());
                             }
@@ -1151,7 +1170,7 @@
         function updateFocusDisplay() {
             const m = Math.floor(focusTimeLeft / 60);
             const s = focusTimeLeft % 60;
-            document.getElementById('focus-timer').innerText = 
+            document.getElementById('focus-timer').innerText =
                 `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
 
@@ -1202,8 +1221,8 @@
                         { label: 'Расход', data: db.projects.map(p => p.expenses), backgroundColor: '#ef4444' }
                     ]
                 },
-                options: { 
-                    responsive: true, 
+                options: {
+                    responsive: true,
                     maintainAspectRatio: false,
                     scales: { y: { beginAtZero: true } }
                 }
@@ -1236,8 +1255,8 @@
                         borderWidth: 0
                     }]
                 },
-                options: { 
-                    responsive: true, 
+                options: {
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'right' } }
                 }
@@ -1365,7 +1384,7 @@
                 return;
             }
             db.gsc.clientId = clientId;
-            
+
             const formData = new FormData();
             formData.append('action', 'save_settings');
             formData.append('key', 'gsc_client_id');
@@ -1387,18 +1406,18 @@
             const redirectUri = window.location.href.split('#')[0];
             const scope = 'https://www.googleapis.com/auth/webmasters.readonly ';
             const state = 'seo_manager_state';
-            
+
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&state=${state}&access_type=online&prompt=consent`;
-            
+
             const width = 600;
             const height = 700;
             const left = (screen.width / 2) - (width / 2);
             const top = (screen.height / 2) - (height / 2);
-            
+
             const popup = window.open(authUrl, 'Google Login', `width=${width},height=${height},left=${left},top=${top}`);
-            
+
             window.addEventListener('message', function(event) {
-                if(event.origin !== window.location.origin) return; 
+                if(event.origin !== window.location.origin) return;
                 if(event.data.type === 'gsc_auth_success') {
                     handleGscToken(event.data.token);
                 }
@@ -1421,7 +1440,7 @@
 
         function handleGscToken(token) {
             db.gsc.token = token;
-            
+
             const formData = new FormData();
             formData.append('action', 'save_settings');
             formData.append('key', 'gsc_token');
@@ -1451,7 +1470,7 @@
         function disconnectGsc() {
             db.gsc.token = null;
             db.gsc.siteUrl = null;
-            
+
             const formData = new FormData();
             formData.append('action', 'save_settings');
             formData.append('key', 'gsc_token');
@@ -1469,7 +1488,7 @@
             try {
                 const sitesRes = await fetch(' https://www.googleapis.com/webmasters/v3/sites?access_token=' + db.gsc.token);
                 const sitesData = await sitesRes.json();
-                
+
                 if(sitesData.error) throw new Error(sitesData.error.message);
 
                 if(!sitesData.siteEntry || sitesData.siteEntry.length === 0) {
@@ -1479,7 +1498,7 @@
 
                 let siteUrl = db.gsc.siteUrl || sitesData.siteEntry[0].siteUrl;
                 db.gsc.siteUrl = siteUrl;
-                
+
                 // Сохраняем выбранный сайт
                 const formData = new FormData();
                 formData.append('action', 'save_settings');
@@ -1517,7 +1536,7 @@
                     rowLimit: 20,
                     startRow: 0
                 };
-                
+
                 const queryRes = await fetch(`https://www.googleapis.com/webmasters/v3/sites/ ${encodeURIComponent(siteUrl)}/searchAnalytics/query?access_token=${db.gsc.token}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1581,7 +1600,7 @@
 
             const insightsDiv = document.getElementById('gsc-insights');
             let insightsHtml = '';
-            
+
             const lowCtrRows = data.rows.filter(r => r.position < 10 && r.ctr < 0.02);
             if(lowCtrRows.length > 0) {
                 insightsHtml += `<div class="ai-tip" style="margin-bottom:10px;"><b>Quick Win:</b> Найдено ${lowCtrRows.length} запросов с высокой позицией, но низким CTR. Попробуйте улучшить Title/Description.</div>`;
